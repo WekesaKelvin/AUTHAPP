@@ -1,0 +1,112 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+  
+  .auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    background-image: url('/assets/IMbank copy.jpg');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    padding: 40px;
+  }
+  
+  .logo-wrapper {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+  }
+  
+  .logo-img {
+    width: 60px;
+    height: auto;
+    object-fit: contain;
+  }
+  
+  .auth-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 30px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.85); /* Semi-transparent white */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    animation: fadeInUp 0.6s ease-out;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .header-title {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1e3c72;
+    margin-bottom: 10px;
+  }
+  
+  mat-form-field {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  
+  .mat-label {
+    color: #1e3c72;
+    font-weight: 600;
+  }
+  
+  .signup-button {
+    background: linear-gradient(45deg, #11fc19, #66bb6a);
+    color: white;
+    font-weight: 500;
+    border-radius: 25px;
+    padding: 12px;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+  }
+  
+  .signup-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+  }
+  
+  .error-message {
+    color: #f44336;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: 600;
+  }
+  
+  mat-card-actions {
+    text-align: center;
+    margin-top: 15px;
+  }
+  
+  mat-card-actions a {
+    color: #1e3c72;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  
+  @media (max-width: 768px) {
+    .auth-card {
+      padding: 20px;
+    }
+  }
+  

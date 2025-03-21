@@ -1,0 +1,46 @@
+<div class="auth-container" @fadeIn>
+    <div class="logo-wrapper">
+      <img src="/assets/im-bank-logo.png" alt="Logo" class="logo-img">
+    </div>
+    <mat-card class="auth-card">
+      <mat-card-header>
+        <mat-card-title class="header-title">Welcome Back</mat-card-title>
+      </mat-card-header>
+  
+      <mat-card-content>
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <mat-form-field appearance="fill">
+            <mat-label>Username</mat-label>
+            <input matInput formControlName="username" required>
+            <mat-error *ngIf="loginForm.get('username')?.hasError('required')">
+              Username is required
+            </mat-error>
+          </mat-form-field>
+  
+          <mat-form-field appearance="fill">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" formControlName="password" required>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+              Password is required
+            </mat-error>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+              Password must be at least 6 characters
+            </mat-error>
+          </mat-form-field>
+  
+          <div class="error-message" *ngIf="errorMessage()">
+            {{ errorMessage() }}
+          </div>
+  
+          <button mat-raised-button color="primary" type="submit" [disabled]="loginForm.invalid" class="login-button">
+            Login
+          </button>
+        </form>
+      </mat-card-content>
+  
+      <mat-card-actions>
+        <p>Don't have an account? <a (click)="navigateToSignup()">Sign Up</a></p>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+  

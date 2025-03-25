@@ -35,17 +35,17 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   ]
 })
 export class SignupComponent {
-  // Functional Dependency Injection
+  
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
 
 
-  // Reactive form with custom password match validator
+  
   signupForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    username: ['', Validators.required],
+    name: ['', Validators.required],
     password: ['', [Validators.required, Validators.minLength(6)]],
     confirmPassword: ['', Validators.required]
   }, { validators: this.passwordMatchValidator });
@@ -71,13 +71,13 @@ export class SignupComponent {
   onSubmit(): void {
     if (this.signupForm.invalid) return;
 
-    const { email,username, password } = this.signupForm.value;
+    const { email,name, password } = this.signupForm.value;
 
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
     
-    this.authService.signup(email!, password!).subscribe({
+    this.authService.signup(name!,email!, password!).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.router.navigate(['/login']);  

@@ -12,6 +12,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { CommonModule } from '@angular/common';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-login',
@@ -26,6 +28,7 @@ import { MatButtonModule } from '@angular/material/button';
     MatCardModule,
     MatButtonModule,
     RouterLink,
+    CommonModule
   ],
 })
 export class LoginComponent implements OnInit {
@@ -36,12 +39,12 @@ export class LoginComponent implements OnInit {
 
   hide = true;
   loginForm!: FormGroup;
-  loginError = signal<string | null>(null); // For error message display
+  loginError = signal<string | null>(null); 
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
-      username: ['', Validators.required], // Username instead of email
-      password: ['', [Validators.required, Validators.minLength(6)]], // Adding minlength validation
+      email: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(6)]], 
     });
   }
 
@@ -53,11 +56,14 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
-        this.matSnackBar.open(response.message, 'Close', {
+        const message = response.message ?? 'Login successful'; 
+        this.matSnackBar.open(message, 'Close', {
           duration: 5000,
           horizontalPosition: 'center',
         });
-        this.router.navigate(['/']);
+        setTimeout(() => {
+          window.location.href = 'http://localhost:56234/';
+        }, 1000);
       },
       error: (error) => {
         const message = error?.error?.message || 'Login failed';
@@ -70,18 +76,15 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  // Displaying error message in HTML
+ 
   errorMessage(): string | null {
     return this.loginError();
   }
 
-  // Optional Forgot Password & Sign Up navigation
-  navigateToSignup(): void {
-    this.router.navigate(['/register']);
+  
+  get email() {
+    return this.loginForm.get('email');
   }
-
-  navigateToForgotPassword(): void {
-    this.router.navigate(['/forgot-password']);
-  }
+  
 }
 

@@ -1,5 +1,5 @@
 export interface AuthResponse {
-  token: string;
-  isSuccess: true;
-  message: string;
+  token?: string;
+  isSuccess: boolean;
+  message?: string;
 }

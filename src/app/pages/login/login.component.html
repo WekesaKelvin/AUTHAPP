@@ -12,8 +12,8 @@
 
         <!-- Username Field -->
         <mat-form-field appearance="fill">
-          <mat-label>Username</mat-label>
-          <input matInput placeholder="Username" formControlName="username" />
+          <mat-label>Email</mat-label>
+          <input matInput placeholder="Email" formControlName="email" />
           <mat-icon matPrefix>person</mat-icon>
           <mat-error *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
             Username is required
@@ -46,7 +46,7 @@
     </mat-card-content>
 
     <!-- Forgot Password Link -->
-    <a routerLink="/forgot-password" class="forgot-password-link">Forgot Password?</a>
+    <a routerLink="/forget-password" class="forgot-password-link">Forgot Password?</a>
 
     <!-- Register Link -->
     <mat-card-actions>

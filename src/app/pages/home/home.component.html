@@ -14,12 +14,13 @@
         </span>
       </h1>
       }@else{
-      <h1 class="text-2xl">You are not logged in</h1>
+      <h2 class="text-2xl">You are not logged in</h2>
       <a routerLink="/login">
-        <button
-          class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-md shadow-md transition transform hover:scale-105">
+        <button mat-raised-button color="primary" class="login-button">
+          <mat-icon class="mr-2">login</mat-icon>
           Login
         </button>
+        
       </a>
       }
     </div>

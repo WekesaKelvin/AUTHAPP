@@ -10,7 +10,7 @@
         <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
           <mat-form-field appearance="fill">
             <mat-label>Email</mat-label>
-            <input matInput formControlName="username" required>
+            <input matInput formControlName="Email" required>
             <mat-error *ngIf="signupForm.get('username')?.hasError('required')">
               Email is required
             </mat-error>

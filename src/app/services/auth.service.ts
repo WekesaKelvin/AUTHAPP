@@ -6,17 +6,24 @@ import { map, catchError } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
 import { LoginRequest } from '../interfaces/login-request';
 import { AuthResponse } from '../interfaces/auth-response';
+import { HttpHeaders } from '@angular/common/http';
+// API-specific response for login
+interface ApiAuthResponse {
+  jwtToken: string;
+}
 
-interface AuthResponseDto {
-  UserId: number;
-  FullName: string;
-  Token: string;
+// API-specific response for signup
+interface UserDTO {
+  id: number;
+  name: string;
+  email: string;
 }
 
 interface User {
   id: number;
   email: string;
   fullName: string;
+  roles?: string[];
   token?: string;
 }
 
@@ -24,9 +31,7 @@ interface User {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = environment.apiUrl;
-  private authUrl = `${this.apiUrl}account`;
-
+  private apiUrl = environment.apiUrl || 'http://localhost:8080';
   private tokenKey = 'authToken';
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);
@@ -38,21 +43,22 @@ export class AuthService {
       try {
         const decodedToken: any = jwtDecode(token);
         const user: User = {
-          id: decodedToken.nameid,
-          email: decodedToken.email,
-          fullName: decodedToken.name,
+          id: decodedToken.nameid || 0, 
+          email: decodedToken.sub || '', 
+          fullName: decodedToken.name || '',
+          roles: decodedToken.role ? (Array.isArray(decodedToken.role) ? decodedToken.role : [decodedToken.role]) : [],
           token: token
         };
         this.currentUserSubject.next(user);
       } catch (error) {
         console.error('Invalid token:', error);
-        localStorage.removeItem(this.tokenKey);
+        sessionStorage.removeItem(this.tokenKey); 
       }
     }
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    return sessionStorage.getItem(this.tokenKey);
   }
 
   getUserDetail() {
@@ -60,10 +66,10 @@ export class AuthService {
     if (!token) return null;
     const decodedToken: any = jwtDecode(token);
     const userDetail = {
-      id: decodedToken.nameid,
-      fullName: decodedToken.name,
-      email: decodedToken.email,
-      roles: decodedToken.role || [],
+      id: decodedToken.nameid || 0,
+      fullName: decodedToken.name || '',
+      email: decodedToken.sub || '',
+      roles: decodedToken.role || []
     };
     return userDetail;
   }
@@ -72,24 +78,28 @@ export class AuthService {
     return !!this.getToken();
   }
 
-  // Login method
   login(data: LoginRequest): Observable<AuthResponse> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http
-      .post<AuthResponse>(`${this.authUrl}/login`, data)
+      .post<ApiAuthResponse>(`${this.apiUrl}/authenticate`, data)
       .pipe(
         map(response => {
-          if (response.isSuccess && response.token) {
-            localStorage.setItem(this.tokenKey, response.token);
-            const decodedToken: any = jwtDecode(response.token);
+          const token = response.jwtToken;
+          if (token) {
+            sessionStorage.setItem(this.tokenKey, token);
+            const decodedToken: any = jwtDecode(token);
             const user: User = {
-              id: decodedToken.nameid,
-              email: decodedToken.email,
-              fullName: decodedToken.name,
-              token: response.token
+              id: decodedToken.nameid || 0,
+              email: decodedToken.sub || '',
+              fullName: decodedToken.name || '',
+              roles: decodedToken.role ? (Array.isArray(decodedToken.role) ? decodedToken.role : [decodedToken.role]) : [],
+              token: token
             };
             this.currentUserSubject.next(user);
+            return { isSuccess: true, token };
+          } else {
+            throw new Error('Token not found in response');
           }
-          return response;
         }),
         catchError(error => {
           console.error('Login failed:', error);
@@ -98,28 +108,16 @@ export class AuthService {
       );
   }
 
-  // Signup method
-  signup(email: string, password: string): Observable<boolean> {
+  signup(name: string, email: string, password: string): Observable<boolean> {
     return this.http
-      .post<AuthResponseDto>(`${this.authUrl}/register`, {
-        Email: email,
-        FullName: email, // adjust later to actual fullname input
-        Password: password
-      })
+      .post<UserDTO>(`${this.apiUrl}/sign-up`, { name, email, password })
       .pipe(
         map(res => {
-          if (res?.Token) {
-            localStorage.setItem(this.tokenKey, res.Token);
-            const user: User = {
-              id: res.UserId || 0,
-              email: email,
-              fullName: res.FullName || email,
-              token: res.Token
-            };
-            this.currentUserSubject.next(user);
+          if (res && res.id) {
+            // User created successfully, no token expected
             return true;
           } else {
-            throw new Error('Signup failed: Token not found');
+            throw new Error('Signup failed');
           }
         }),
         catchError(error => {
@@ -130,17 +128,17 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(this.tokenKey);
+    sessionStorage.removeItem(this.tokenKey); 
     this.currentUserSubject.next(null);
   }
 
   forgotPassword(email: string): Observable<string> {
     return this.http
-      .post<any>(`${this.authUrl}/forgot-password`, { Email: email })
+      .post<any>(`${this.apiUrl}/forgot-password`, { email }) 
       .pipe(
         map(res => {
-          if (res?.Message) {
-            return res.Message;
+          if (res?.message) {
+            return res.message;
           } else {
             throw new Error('Unexpected response from server');
           }

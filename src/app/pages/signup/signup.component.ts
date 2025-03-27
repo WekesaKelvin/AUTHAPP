@@ -70,7 +70,7 @@ export class SignupComponent {
 
   onSubmit(): void {
     if (this.signupForm.invalid) return;
-
+    console.log('Signup form submitted:', this.signupForm.value); 
     const { email,name, password } = this.signupForm.value;
 
     this.isLoading.set(true);
@@ -87,6 +87,7 @@ export class SignupComponent {
         if (err.status === 409) {
           this.errorMessage.set('User already exists');
         } else {
+          console.error('Signup Error:', err); 
           this.errorMessage.set(err.message || 'Signup failed. Please try again.');
         }
       }

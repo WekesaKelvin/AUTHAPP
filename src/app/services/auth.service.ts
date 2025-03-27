@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
@@ -7,12 +7,13 @@ import { jwtDecode } from 'jwt-decode';
 import { LoginRequest } from '../interfaces/login-request';
 import { AuthResponse } from '../interfaces/auth-response';
 import { HttpHeaders } from '@angular/common/http';
-// API-specific response for login
+
+
+
 interface ApiAuthResponse {
   jwtToken: string;
 }
 
-// API-specific response for signup
 interface UserDTO {
   id: number;
   name: string;
@@ -114,7 +115,7 @@ export class AuthService {
       .pipe(
         map(res => {
           if (res && res.id) {
-            // User created successfully, no token expected
+            
             return true;
           } else {
             throw new Error('Signup failed');
@@ -133,22 +134,36 @@ export class AuthService {
   }
 
   forgotPassword(email: string): Observable<string> {
+    
+    const params = new HttpParams().set('email', email);
     return this.http
-      .post<any>(`${this.apiUrl}/forgot-password`, { email }) 
+      .post<string>(`${this.apiUrl}/forgot-password`, {}, { params })
       .pipe(
-        map(res => {
-          if (res?.message) {
-            return res.message;
-          } else {
-            throw new Error('Unexpected response from server');
-          }
-        }),
+        map(() => 'Password reset link sent successfully. Please check your email.'),
         catchError(error => {
           console.error('Forgot Password request failed:', error);
           return throwError(() => new Error('Password reset request failed. Please try again.'));
         })
       );
   }
+
+  resetPassword(token: string, newPassword: string): Observable<string> {
+    
+    const params = new HttpParams()
+      .set('token', token)
+      .set('newPassword', newPassword);
+      
+    return this.http
+      .post<string>(`${this.apiUrl}/reset-password`, {}, { params })
+      .pipe(
+        map(() => 'Password reset successfully.'),
+        catchError(error => {
+          console.error('Reset Password request failed:', error);
+          return throwError(() => new Error('Invalid or expired token.'));
+        })
+      );
+  }
+  
 
   getCurrentUser(): Observable<User | null> {
     return this.currentUser$;

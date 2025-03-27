@@ -62,7 +62,7 @@ export class LoginComponent implements OnInit {
           horizontalPosition: 'center',
         });
         setTimeout(() => {
-          window.location.href = 'http://localhost:56234/';
+          window.location.href = ' http://localhost:60445/';
         }, 1000);
       },
       error: (error) => {

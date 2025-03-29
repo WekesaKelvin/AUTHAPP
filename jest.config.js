@@ -5,9 +5,6 @@ module.exports = {
   transform: {
     '^.+\\.(ts|js|html)$': 'ts-jest',
   },
-  moduleNameMapper: {
-    '^@app/(.*)$': '<rootDir>/src/app/$1',
-    '^@environments/(.*)$': '<rootDir>/src/environments/$1',
-  },
-  testMatch: ['**/__tests__/**/*.spec.ts', '**/*.spec.ts'],
+  moduleFileExtensions: ['ts', 'html', 'js', 'json'],
+  testMatch: ['**/+(*.)+(spec).+(ts|js)?(x)']
 };

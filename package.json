@@ -6,7 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test --all"
   },
   "private": true,
   "dependencies": {
@@ -36,7 +36,7 @@
     "jasmine-core": "~5.1.0",
     "jest": "^29.7.0",
     "jest-mock": "^29.7.0",
-    "jest-preset-angular": "^14.5.3",
+    "jest-preset-angular": "^13.1.6",
     "karma-coverage": "~2.2.0",
     "mocha": "^11.1.0",
     "ng-mocks": "^14.13.4",

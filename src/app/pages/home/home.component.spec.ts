@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { HomeComponent } from './home.component';
 import { AuthService } from '../../services/auth.service';
 import { RouterLink } from '@angular/router';
@@ -7,12 +7,12 @@ import { MatIcon } from '@angular/material/icon';
 describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
-  let authServiceMock: jest.Mocked<AuthService>;
+  let authServiceMock: Partial<AuthService>;
 
   beforeEach(async () => {
     authServiceMock = {
-      // Mock only the necessary methods if needed
-    } as Partial<jest.Mocked<AuthService>> as jest.Mocked<AuthService>;
+      isLoggedIn: jest.fn().mockReturnValue(true), // Mocked function
+    };
 
     await TestBed.configureTestingModule({
       imports: [RouterLink, MatIcon],
@@ -28,4 +28,9 @@ describe('HomeComponent', () => {
   it('should create the component', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should check if user is logged in using AuthService', () => {
+    expect(authServiceMock.isLoggedIn).toHaveBeenCalled();
+  });
 });
+

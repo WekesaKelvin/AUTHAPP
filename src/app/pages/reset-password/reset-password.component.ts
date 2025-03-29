@@ -65,12 +65,12 @@ export class ResetPasswordComponent implements OnInit {
       const { newPassword } = this.resetPasswordForm.value;
       const token = this.route.snapshot.queryParams['token'];
       this.authService.resetPassword(token, newPassword).subscribe({
-        next: (message) => {
-          this.snackBar.open(message, 'Close', { duration: 3000 });
+        next: () => {
+          this.snackBar.open('Password reset successfully!', 'Close', { duration: 3000 });
           this.router.navigate(['/login']);
         },
         error: (err) => {
-          this.errorMessage = err.message || 'Password reset failed.';
+          this.errorMessage = err.message || 'Invalid or expired token.';
           this.isSubmitting = false;
         }
       });

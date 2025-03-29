@@ -1,50 +1,40 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { RouterOutlet } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-
-
-// Mock NavbarComponent to avoid testing dependencies
-@Component({
-  selector: 'app-navbar',
-  template: '<div>Mock Navbar</div>',
-})
-class MockNavbarComponent {}
 
 describe('AppComponent', () => {
+  let component: AppComponent;
+  let fixture: ComponentFixture<AppComponent>;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent, RouterOutlet, MatButtonModule, CommonModule, MockNavbarComponent,HttpClientTestingModule], 
+      imports: [CommonModule, RouterOutlet, MatButtonModule, NavbarComponent],
+      declarations: [AppComponent],
     }).compileComponents();
-  });
 
-  it('should create the app component', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
-  it(`should have title as 'client'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('client');
-  });
-
-  it('should render navbar component', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    fixture = TestBed.createComponent(AppComponent);
+    component = fixture.componentInstance;
     fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('app-navbar')).not.toBeNull();
   });
 
-  it('should render router-outlet', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
+  it('should create the app', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should have title "client"', () => {
+    expect(component.title).toBe('client');
+  });
+
+  it('should render the navbar component', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('router-outlet')).not.toBeNull();
+    expect(compiled.querySelector('app-navbar')).toBeTruthy();
+  });
+
+  it('should contain a router outlet', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('router-outlet')).toBeTruthy();
   });
 });

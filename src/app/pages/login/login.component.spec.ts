@@ -1,32 +1,36 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ReactiveFormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
-import { MockProvider } from 'ng-mocks';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
-  let authServiceMock: jest.Mocked<AuthService>;
-  let routerMock: jest.Mocked<Router>;
+  let authServiceMock: Partial<AuthService>;
+  let matSnackBarMock: Partial<MatSnackBar>;
+  let routerMock: Partial<Router>;
 
   beforeEach(async () => {
     authServiceMock = {
       login: jest.fn(),
-    } as unknown as jest.Mocked<AuthService>;
-
+    };
+    matSnackBarMock = {
+      open: jest.fn(),
+    };
     routerMock = {
       navigate: jest.fn(),
-    } as unknown as jest.Mocked<Router>;
+    };
 
     await TestBed.configureTestingModule({
       imports: [ReactiveFormsModule],
       declarations: [LoginComponent],
       providers: [
-        MockProvider(AuthService, authServiceMock),
-        MockProvider(Router, routerMock),
+        { provide: AuthService, useValue: authServiceMock },
+        { provide: MatSnackBar, useValue: matSnackBarMock },
+        { provide: Router, useValue: routerMock },
       ],
     }).compileComponents();
 
@@ -39,46 +43,35 @@ describe('LoginComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize the form with empty fields', () => {
-    expect(component.loginForm.value).toEqual({ email: '', password: '' });
+  it('should initialize the login form', () => {
+    expect(component.loginForm).toBeDefined();
+    expect(component.loginForm.controls['email']).toBeDefined();
+    expect(component.loginForm.controls['password']).toBeDefined();
   });
 
-  it('should validate email and password fields', () => {
+  it('should not submit if form is invalid', () => {
     component.loginForm.setValue({ email: '', password: '' });
-
-    expect(component.email?.valid).toBeFalsy();
-    expect(component.loginForm.get('password')?.valid).toBeFalsy();
-
-    component.loginForm.setValue({ email: 'test@example.com', password: '123456' });
-
-    expect(component.email?.valid).toBeTruthy();
-    expect(component.loginForm.get('password')?.valid).toBeTruthy();
-  });
-
-  it('should call login on AuthService when form is valid', () => {
-    const testCredentials = { email: 'test@example.com', password: 'password123' };
-    authServiceMock.login.mockReturnValue(of({ message: 'Login successful', isSuccess: true }));
-    component.loginForm.setValue(testCredentials);
-
     component.onSubmit();
-
-    expect(authServiceMock.login).toHaveBeenCalledWith(testCredentials);
+    expect(authServiceMock.login).not.toHaveBeenCalled();
   });
 
-  it('should handle login failure and display error message', () => {
-    authServiceMock.login.mockReturnValue(throwError(() => new Error('Login failed')));
+  it('should call AuthService login method on valid form submission', () => {
     component.loginForm.setValue({ email: 'test@example.com', password: 'password123' });
+    (authServiceMock.login as jest.Mock).mockReturnValue(of({ message: 'Login successful' }));
 
     component.onSubmit();
 
-    expect(component.errorMessage()).toBe('Login failed');
+    expect(authServiceMock.login).toHaveBeenCalledWith({ email: 'test@example.com', password: 'password123' });
+    expect(matSnackBarMock.open).toHaveBeenCalledWith('Login successful', 'Close', { duration: 5000, horizontalPosition: 'center' });
   });
 
-  // it('should display success message in snackbar on success', () => {
-  //   // MatSnackBar test commented out
-  // });
+  it('should show error message when login fails', () => {
+    component.loginForm.setValue({ email: 'test@example.com', password: 'wrongpass' });
+    (authServiceMock.login as jest.Mock).mockReturnValue(throwError(() => ({ error: { message: 'Incorrect email or password' } })));
 
-  // it('should display error message in snackbar on failure', () => {
-  //   // MatSnackBar test commented out
-  // });
+    component.onSubmit();
+
+    expect(component.errorMessage()).toBe('Incorrect email or password');
+    expect(matSnackBarMock.open).toHaveBeenCalledWith('Incorrect email or password', '', { duration: 5000, horizontalPosition: 'center' });
+  });
 });

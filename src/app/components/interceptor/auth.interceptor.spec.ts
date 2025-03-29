@@ -25,7 +25,7 @@ describe('AuthInterceptor', () => {
   });
 
   afterEach(() => {
-    httpMock.verify(); // Ensures no outstanding requests remain
+    httpMock.verify(); 
   });
 
   it('should add Authorization header when token is present', () => {

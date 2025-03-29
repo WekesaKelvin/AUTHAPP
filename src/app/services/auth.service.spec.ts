@@ -5,28 +5,18 @@ import { environment } from '../../environments/environment';
 import { LoginRequest } from '../interfaces/login-request';
 import { AuthResponse } from '../interfaces/auth-response';
 
-const mockToken = 'mock.jwt.token';
-const mockUser = {
-  id: 1,
-  email: 'test@example.com',
-  fullName: 'Test User',
-  roles: ['USER'],
-  token: mockToken
-};
-
-const apiUrl = environment.apiUrl || 'http://localhost:8080';
-
 describe('AuthService', () => {
-  let service: AuthService;
+  let authService: AuthService;
   let httpMock: HttpTestingController;
+  const apiUrl = environment.apiUrl || 'http://localhost:8080';
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [AuthService]
+      providers: [AuthService],
     });
 
-    service = TestBed.inject(AuthService);
+    authService = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
@@ -35,63 +25,68 @@ describe('AuthService', () => {
     sessionStorage.clear();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
   it('should login successfully and store token', () => {
-    const loginData: LoginRequest = { email: 'test@example.com', password: 'password' };
-    const mockResponse = { jwtToken: mockToken };
+    const mockToken = 'fake-jwt-token';
+    const loginData: LoginRequest = { email: 'test@example.com', password: 'password123' };
 
-    service.login(loginData).subscribe((response: AuthResponse) => {
-      expect(response.isSuccess).toBe(true);
-      expect(response.token).toBe(mockToken);
+    authService.login(loginData).subscribe((res: AuthResponse) => {
+      expect(res.isSuccess).toBe(true);
+      expect(res.token).toBe(mockToken);
       expect(sessionStorage.getItem('authToken')).toBe(mockToken);
     });
 
     const req = httpMock.expectOne(`${apiUrl}/authenticate`);
     expect(req.request.method).toBe('POST');
-    req.flush(mockResponse);
+    req.flush({ jwtToken: mockToken });
   });
 
-  it('should signup successfully', () => {
-    const name = 'New User';
-    const email = 'new@example.com';
-    const password = 'password';
-    const mockSignupResponse = { id: 2, name, email };
+  it('should return true when signup is successful', () => {
+    const signupData = { name: 'Test User', email: 'test@example.com', password: 'password123' };
 
-    service.signup(name, email, password).subscribe((success) => {
-      expect(success).toBe(true);
+    authService.signup(signupData.name, signupData.email, signupData.password).subscribe((res) => {
+      expect(res).toBe(true);
     });
 
     const req = httpMock.expectOne(`${apiUrl}/sign-up`);
     expect(req.request.method).toBe('POST');
-    req.flush(mockSignupResponse);
+    req.flush({ id: 1, name: 'Test User', email: 'test@example.com' });
   });
 
   it('should logout and clear session storage', () => {
-    sessionStorage.setItem('authToken', mockToken);
-    service.logout();
+    sessionStorage.setItem('authToken', 'fake-jwt-token');
+    authService.logout();
     expect(sessionStorage.getItem('authToken')).toBeNull();
   });
 
-  it('should return true if user is logged in', () => {
-    sessionStorage.setItem('authToken', mockToken);
-    expect(service.isLoggedIn()).toBe(true);
+  it('should detect if user is logged in', () => {
+    sessionStorage.setItem('authToken', 'fake-jwt-token');
+    expect(authService.isLoggedIn()).toBe(true);
+    sessionStorage.removeItem('authToken');
+    expect(authService.isLoggedIn()).toBe(false);
   });
 
-  it('should return false if user is not logged in', () => {
-    expect(service.isLoggedIn()).toBeFalsy();
-  });
-
-  it('should send forgot password request successfully', () => {
+  it('should send forgot password request and return success message', () => {
     const email = 'test@example.com';
-    service.forgotPassword(email).subscribe((message) => {
-      expect(message).toBe('Password reset link sent successfully. Please check your email.');
+
+    authService.forgotPassword(email).subscribe((res) => {
+      expect(res).toBe('Password reset link sent successfully. Please check your email.');
     });
 
     const req = httpMock.expectOne(`${apiUrl}/forgot-password?email=${email}`);
     expect(req.request.method).toBe('POST');
     req.flush({});
+  });
+
+  it('should reset password successfully', () => {
+    const token = 'reset-token';
+    const newPassword = 'newPassword123';
+
+    authService.resetPassword(token, newPassword).subscribe((res) => {
+      expect(res).toBe('Password reset successfully.');
+    });
+
+    const req = httpMock.expectOne(`${apiUrl}/reset-password?token=${token}&newPassword=${newPassword}`);
+    expect(req.request.method).toBe('POST');
+    req.flush('Password reset successfully.');
   });
 });

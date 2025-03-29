@@ -62,13 +62,13 @@ export class LoginComponent implements OnInit {
           horizontalPosition: 'center',
         });
         setTimeout(() => {
-          window.location.href = ' http://localhost:60445/';
+          window.location.href = ' http://localhost:53320/';
         }, 1000);
       },
       error: (error) => {
-        const message = error?.error?.message || 'Login failed';
+        const message = error?.error?.message || 'Incorrect email or password';
         this.loginError.set(message);
-        this.matSnackBar.open(message, 'Close', {
+        this.matSnackBar.open(message, '', {
           duration: 5000,
           horizontalPosition: 'center',
         });

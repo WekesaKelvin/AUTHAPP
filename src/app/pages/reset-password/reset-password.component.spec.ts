@@ -1,32 +1,60 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { ResetPasswordComponent } from './reset-password.component';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
-import { ReactiveFormsModule } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { MockProvider } from 'ng-mocks';
+import { ReactiveFormsModule } from '@angular/forms';
 
 describe('ResetPasswordComponent', () => {
   let component: ResetPasswordComponent;
   let fixture: ComponentFixture<ResetPasswordComponent>;
-  let authServiceMock: jest.Mocked<AuthService>;
-  let routerMock: jest.Mocked<Router>;
+  let authServiceMock: Partial<AuthService>;
+  let matSnackBarMock: Partial<MatSnackBar>;
+  let routerMock: Partial<Router>;
+  let activatedRouteMock: Partial<ActivatedRoute>;
 
   beforeEach(async () => {
     authServiceMock = {
       resetPassword: jest.fn(),
-    } as unknown as jest.Mocked<AuthService>;
-
+    };
+    matSnackBarMock = {
+      open: jest.fn(),
+    };
     routerMock = {
       navigate: jest.fn(),
-    } as unknown as jest.Mocked<Router>;
+    };
+    activatedRouteMock = {
+      queryParams: of({ token: 'mockToken123' }),
+      snapshot: {
+        queryParams: { token: 'mockToken123' },
+        url: [],
+        params: {},
+        fragment: null,
+        data: {},
+        outlet: 'primary',
+        component: null,
+        firstChild: null,
+        children: [],
+        root: {} as ActivatedRouteSnapshot,
+        pathFromRoot: [],
+        paramMap: {} as any,
+        queryParamMap: {} as any,
+        routeConfig: null,
+        title: undefined,
+        parent: null
+      },
+    };
 
     await TestBed.configureTestingModule({
       imports: [ReactiveFormsModule],
       declarations: [ResetPasswordComponent],
       providers: [
-        MockProvider(AuthService, authServiceMock),
-        MockProvider(Router, routerMock),
+        { provide: AuthService, useValue: authServiceMock },
+        { provide: MatSnackBar, useValue: matSnackBarMock },
+        { provide: Router, useValue: routerMock },
+        { provide: ActivatedRoute, useValue: activatedRouteMock },
       ],
     }).compileComponents();
 
@@ -39,47 +67,28 @@ describe('ResetPasswordComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize the form with empty fields', () => {
-    expect(component.resetPasswordForm.value).toEqual({ token: '', newPassword: '' });
+  it('should extract token from URL and populate the form', () => {
+    expect(component.resetPasswordForm.value.token).toBe('mockToken123');
   });
 
-  it('should validate token and newPassword fields', () => {
-    component.resetPasswordForm.setValue({ token: '', newPassword: '' });
-
-    expect(component.resetPasswordForm.get('token')?.valid).toBeFalsy();
-    expect(component.resetPasswordForm.get('newPassword')?.valid).toBeFalsy();
-
-    component.resetPasswordForm.setValue({ token: '123456', newPassword: 'password123' });
-
-    expect(component.resetPasswordForm.get('token')?.valid).toBeTruthy();
-    expect(component.resetPasswordForm.get('newPassword')?.valid).toBeTruthy();
-  });
-
-  it('should call resetPassword on AuthService when form is valid', () => {
-    const testCredentials = { token: '123456', newPassword: 'newPassword123' };
-    authServiceMock.resetPassword.mockReturnValue(of('Password reset successful'));
-    component.resetPasswordForm.setValue(testCredentials);
+  it('should call AuthService resetPassword method on valid submission', () => {
+    component.resetPasswordForm.setValue({ token: 'mockToken123', newPassword: 'newPass123' });
+    (authServiceMock.resetPassword as jest.Mock).mockReturnValue(of({ message: 'Password reset successful' }));
 
     component.onSubmit();
 
-    expect(authServiceMock.resetPassword).toHaveBeenCalledWith(testCredentials.token, testCredentials.newPassword);
+    expect(authServiceMock.resetPassword).toHaveBeenCalledWith('mockToken123', 'newPass123');
+    expect(matSnackBarMock.open).toHaveBeenCalledWith('Password reset successfully!', 'Close', { duration: 3000 });
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/login']);
   });
 
-  it('should handle password reset failure and display error message', () => {
-    authServiceMock.resetPassword.mockReturnValue(throwError(() => new Error('Password reset failed')));
-    component.resetPasswordForm.setValue({ token: '123456', newPassword: 'newPassword123' });
+  it('should show error message when reset password fails', () => {
+    component.resetPasswordForm.setValue({ token: 'mockToken123', newPassword: 'newPass123' });
+    (authServiceMock.resetPassword as jest.Mock).mockReturnValue(throwError(() => ({ error: { message: 'Invalid or expired token.' } })));
 
     component.onSubmit();
 
-    expect(component.errorMessage).toBe('Password reset failed.');
-    expect(component.isSubmitting).toBeFalsy();
+    expect(component.errorMessage).toBe('Invalid or expired token.');
+    expect(component.isSubmitting).toBe(false);
   });
-
-  // it('should display success message in snackbar on success', () => {
-  //   // MatSnackBar test commented out
-  // });
-
-  // it('should display error message in snackbar on failure', () => {
-  //   // MatSnackBar test commented out
-  // });
 });

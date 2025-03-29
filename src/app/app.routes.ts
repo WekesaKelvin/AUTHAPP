@@ -11,22 +11,22 @@ export const routes: Routes = [
   {
     path: '',
     component: HomeComponent,
-    canActivate: [AuthGuard], // Protect Home Page
+    canActivate: [AuthGuard],
   },
   {
     path: 'login',
     component: LoginComponent,
-    canActivate: [PublicGuard], // Restrict if logged in
+    canActivate: [PublicGuard], 
   },
   {
     path: 'signup',
     component: SignupComponent,
-    canActivate: [PublicGuard], // Restrict if logged in
+    canActivate: [PublicGuard], 
   },
   {
     path: 'forget-password',
     component: ForgetPasswordComponent,
-    canActivate: [PublicGuard], // Restrict if logged in
+    canActivate: [PublicGuard], 
   },
   { path: 'reset-password', component: ResetPasswordComponent }
 

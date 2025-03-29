@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
+
 import { map, catchError } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
 import { LoginRequest } from '../interfaces/login-request';
@@ -156,7 +157,7 @@ export class AuthService {
     return this.http
       .post<string>(`${this.apiUrl}/reset-password`, {}, { params })
       .pipe(
-        map(() => 'Password reset successfully.'),
+        map(response => response || 'Password reset successfully.'),
         catchError(error => {
           console.error('Reset Password request failed:', error);
           return throwError(() => new Error('Invalid or expired token.'));

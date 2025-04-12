@@ -2,9 +2,12 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "./out-tsc/app",
-    "types": []
-  },
+    "rootDir": ".",
+    "target": "es2020",
+    "lib": ["es2020", "dom", "DOM.Iterable"],
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true 
+ },
   "files": [
     "src/main.ts"
   ],

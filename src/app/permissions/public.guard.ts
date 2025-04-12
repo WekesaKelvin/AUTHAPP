@@ -9,10 +9,11 @@ export class PublicGuard implements CanActivate {
   constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(): boolean {
-    if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/']); // Redirect to home if logged in
+    if (!this.authService.isAuthenticated()) {
+      return true;
+    } else {
+      this.router.navigate(['loca http://localhost:49314/']);
       return false;
     }
-    return true;
   }
 }

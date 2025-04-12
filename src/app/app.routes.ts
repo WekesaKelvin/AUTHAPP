@@ -8,26 +8,11 @@ import { PublicGuard } from './permissions/public.guard';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 
 export const routes: Routes = [
-  {
-    path: '',
-    component: HomeComponent,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'login',
-    component: LoginComponent,
-    canActivate: [PublicGuard], 
-  },
-  {
-    path: 'signup',
-    component: SignupComponent,
-    canActivate: [PublicGuard], 
-  },
-  {
-    path: 'forget-password',
-    component: ForgetPasswordComponent,
-    canActivate: [PublicGuard], 
-  },
-  { path: 'reset-password', component: ResetPasswordComponent }
-
+  { path: '', component: HomeComponent, canActivate: [AuthGuard] },
+  { path: 'login', component: LoginComponent, canActivate: [PublicGuard] },
+  { path: 'signup', component: SignupComponent, canActivate: [PublicGuard] },
+  { path: 'forget-password', component: ForgetPasswordComponent, canActivate: [PublicGuard] },
+  { path: 'reset-password', component: ResetPasswordComponent, canActivate: [PublicGuard] },
+  { path: '**', redirectTo: 'login' }, 
 ];
+

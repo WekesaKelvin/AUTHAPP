@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { Router } from '@angular/router';
 
 import { map, catchError } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
@@ -32,6 +33,7 @@ interface User {
 @Injectable({
   providedIn: 'root'
 })
+
 export class AuthService {
   private apiUrl = environment.apiUrl || 'http://localhost:8080';
   private tokenKey = 'authToken';
@@ -39,22 +41,26 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
+  private authStatusSubject = new BehaviorSubject<boolean>(this.isLoggedIn());
+  public authStatus$ = this.authStatusSubject.asObservable();
+
+
   constructor(private http: HttpClient) {
     const token = this.getToken();
     if (token) {
       try {
         const decodedToken: any = jwtDecode(token);
         const user: User = {
-          id: decodedToken.nameid || 0, 
-          email: decodedToken.sub || '', 
+          id: decodedToken.nameid || 0,
+          email: decodedToken.sub || '',
           fullName: decodedToken.name || '',
           roles: decodedToken.role ? (Array.isArray(decodedToken.role) ? decodedToken.role : [decodedToken.role]) : [],
           token: token
         };
         this.currentUserSubject.next(user);
+        this.authStatusSubject.next(true);
       } catch (error) {
-        console.error('Invalid token:', error);
-        sessionStorage.removeItem(this.tokenKey); 
+        sessionStorage.removeItem(this.tokenKey);
       }
     }
   }
@@ -98,13 +104,14 @@ export class AuthService {
               token: token
             };
             this.currentUserSubject.next(user);
+            this.authStatusSubject.next(true);
+
             return { isSuccess: true, token };
           } else {
             throw new Error('Token not found in response');
           }
         }),
         catchError(error => {
-          console.error('Login failed:', error);
           return throwError(() => new Error('Login failed'));
         })
       );
@@ -116,7 +123,7 @@ export class AuthService {
       .pipe(
         map(res => {
           if (res && res.id) {
-            
+
             return true;
           } else {
             throw new Error('Signup failed');
@@ -129,42 +136,47 @@ export class AuthService {
       );
   }
 
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('token');
+  }
+
+
   logout(): void {
-    sessionStorage.removeItem(this.tokenKey); 
+    sessionStorage.removeItem(this.tokenKey);
     this.currentUserSubject.next(null);
+    this.authStatusSubject.next(false);
+
   }
 
   forgotPassword(email: string): Observable<string> {
-    
+
     const params = new HttpParams().set('email', email);
     return this.http
       .post<string>(`${this.apiUrl}/forgot-password`, {}, { params })
       .pipe(
         map(() => 'Password reset link sent successfully. Please check your email.'),
         catchError(error => {
-          console.error('Forgot Password request failed:', error);
           return throwError(() => new Error('Password reset request failed. Please try again.'));
         })
       );
   }
 
   resetPassword(token: string, newPassword: string): Observable<string> {
-    
+
     const params = new HttpParams()
       .set('token', token)
       .set('newPassword', newPassword);
-      
+
     return this.http
       .post<string>(`${this.apiUrl}/reset-password`, {}, { params })
       .pipe(
         map(response => response || 'Password reset successfully.'),
         catchError(error => {
-          console.error('Reset Password request failed:', error);
           return throwError(() => new Error('Invalid or expired token.'));
         })
       );
   }
-  
+
 
   getCurrentUser(): Observable<User | null> {
     return this.currentUser$;
